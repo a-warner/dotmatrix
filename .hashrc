@@ -4,7 +4,7 @@
 [ -e "$HASHROCKET_DIR" ] || HASHROCKET_DIR="$HOME/hashrocket"
 export HASHROCKET_DIR
 
-for dir in /usr/local/bin "$HOME/bin" .git/safe/../../bin .git/bin; do
+for dir in /usr/local/bin "$HOME/bin" .git/bin .git/safe/../../bin; do
   case "$PATH:" in
     *:"$dir":*) PATH="`echo "$PATH"|sed -e "s#:$dir##"`" ;;
   esac
@@ -60,6 +60,7 @@ hclone() {
   fi
   hcd "$basename"
   ln -sf ../bin .git
+  mkdir -p .git/safe
   if [ ! -f .git/hooks/post-rewrite ]; then
     cat > .git/hooks/post-rewrite <<EOS
 #!/bin/sh
@@ -93,6 +94,8 @@ EOS
   echo "fi" >> .git/hooks/post-checkout
   if [ -n "$new" -a -x script/setup ]; then
     script/setup
+  elif [ -n "$new" -a -x bin/setup ]; then
+    bin/setup
   fi
 }
 
@@ -114,9 +117,9 @@ if [ -n "$BASH_VERSION" ]; then
 
     return 0
   }
-  complete -F _hcd hcd hclone mux
+  complete -F _hcd hcd hclone
 elif [ -n "$ZSH_VERSION" ]; then
-  compctl -/ -S '' -W "$HASHROCKET_DIR" hcd hclone mux
+  compctl -/ -S '' -W "$HASHROCKET_DIR" hcd hclone
 fi
 
 rails_root() {
@@ -138,6 +141,8 @@ rails_root() {
 script_rails() {
   if [ -f "`rails_root`/script/rails" ]; then
     "`rails_root`/script/rails" "$@"
+  elif [ -f "`rails_root`/bin/rails" -a -f "`rails_root`/config/application.rb" ]; then
+    "`rails_root`/bin/rails" "$@"
   else
     local name
     name="$1"
@@ -220,6 +225,7 @@ gco () {
 }
 
 alias gap='git add -p'
+alias gnap='git add -N . && git add -p'
 alias gb='git branch'
 alias gc='git commit -v'
 alias gca='git commit -a -v'
@@ -238,6 +244,113 @@ alias gra='git rebase --abort'
 alias reset-authors='git commit --amend --reset-author -C HEAD'
 alias vi='vim'
 
-bettervim="/Applications/MacVim.app/Contents/MacOS/Vim"
-[ -f "$bettervim" ] && alias vim="$bettervim"
-[ -f "$HOME$bettervim" ] && alias vim="$HOME$bettervim"
+if [ "$(uname)" = Darwin -a "$(command -v vim)" = /usr/bin/vim ]; then
+  bettervim="/Applications/MacVim.app/Contents/MacOS/Vim"
+  [ -f "$bettervim" ] && alias vim="$bettervim"
+  [ -f "$HOME$bettervim" ] && alias vim="$HOME$bettervim"
+fi
+
+
+# Heroku Commands
+
+heroku_command='heroku'
+
+check_for_heroku() {
+  if ! which $heroku_command &> /dev/null; then
+    echo "You do not have heroku toolbelt installed."
+    return 1
+  fi
+  return 0
+}
+
+# View heroku logs in realtime
+#
+# usage: hlogs APP_NAME
+
+hlogs() {
+  if ! check_for_heroku; then
+    return 2
+  fi
+  $heroku_command logs -t --app $1
+}
+
+# Restart heroku app
+#
+# usage: hrestart APP_NAME
+
+hrestart() {
+  if ! check_for_heroku; then
+    return 2
+  fi
+  $heroku_command restart --app $1
+}
+
+# Opens console for heroku app
+#
+# usage: hconsole APP_NAME
+
+hconsole() {
+  if ! check_for_heroku; then
+    return 2
+  fi
+  $heroku_command run console --app $1
+}
+
+# Run config for heroku app
+#
+# usage: hconfig APP_NAME
+
+hconfig() {
+  if ! check_for_heroku; then
+    return 2
+  fi
+  APP=$1
+  shift 1
+  $heroku_command config $@  --app $APP
+}
+
+# Sets config var for heroku app
+#
+# usage: hset APP_NAME key value
+
+hset() {
+  if ! check_for_heroku; then
+    return 2
+  fi
+  $heroku_command config:set $2=$3 --app $1
+}
+
+# Gets config var for heroku app
+#
+# usage: hget APP_NAME key
+
+hget() {
+  if ! check_for_heroku; then
+    return 2
+  fi
+  $heroku_command config:get $2 --app $1
+}
+
+# Removes config var for heroku app
+#
+# usage: hremove APP_NAME key
+
+hremove() {
+  if ! check_for_heroku; then
+    return 2
+  fi
+  $heroku_command config:unset $2 --app $1
+}
+
+# Run rake for heroku app
+#
+# usage: hrake APP_NAME args
+
+hrake() {
+  if ! check_for_heroku; then
+    return 2
+  fi
+  APP=$1
+  shift 1
+  $heroku_command run rake $@ --app $APP
+}
