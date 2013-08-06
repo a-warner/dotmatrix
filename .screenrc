@@ -3,7 +3,6 @@ hardstatus string '%{b}[ %{B}%H %{g}][%= %{wk}%?%-Lw%?%{=b kR}(%{W}%n*%f %t%?(%u
 startup_message off
 defscrollback 200000
 shelltitle $USER
-shell -$SHELL
 caption always
 activity "Activity in window %n (%t)^G^G"
 bell_msg "Bell in window %n (%t)^G"
