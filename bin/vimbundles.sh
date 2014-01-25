@@ -56,5 +56,6 @@ get_bundle jgdavey vim-turbux
 get_bundle jgdavey vim-weefactor
 get_bundle gregsexton gitv
 get_bundle kien ctrlp.vim
+get_bundle rodjek vim-puppet
 
 vim -c 'call pathogen#helptags()|q'
