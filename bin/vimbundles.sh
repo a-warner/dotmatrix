@@ -59,5 +59,6 @@ get_bundle kien ctrlp.vim
 get_bundle rodjek vim-puppet
 get_bundle mustache vim-mustache-handlebars
 get_bundle mxw vim-jsx
+get_bundle editorconfig editorconfig-vim
 
 vim -c 'call pathogen#helptags()|q'
