@@ -30,6 +30,7 @@ get_bundle tpope vim-cucumber
 get_bundle tpope vim-endwise
 get_bundle tpope vim-eunuch
 get_bundle tpope vim-fugitive
+get_bundle tpope vim-rhubarb
 get_bundle tpope vim-git
 get_bundle tpope vim-haml
 get_bundle tpope vim-markdown
